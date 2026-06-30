@@ -1,0 +1,38 @@
+# .gitignore for Akatsuki Hermes Team
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+
+# Hermes
+.hermes/
+*.log
+*.db
+*.db-shm
+*.db-wal
+.env
+.secrets
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Temporary
+tmp/
+temp/
+*.tmp
