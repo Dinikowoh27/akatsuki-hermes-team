@@ -2,8 +2,8 @@
 name: akatsuki-dispatch
 description: >
   Decomposition and dispatch playbook untuk Akatsuki Team.
-  Orchestrator = profil bot utama (@SLEVENSYAIBOT). Workers = 10 profil Akatsuki.
-  Worker names: pain, itachi, sasori, obito, kisame, konan, deidara, zetsu, treasury, madara.
+  Orchestrator = profil bot utama (@SLEVENSYAIBOT). Workers = 9 profil Akatsuki.
+  Worker names: pain, itachi, sasori, obito, kisame, konan, deidara, zetsu, madara.
 tags: [orchestrator, dispatch, kanban, akatsuki]
 ---
 

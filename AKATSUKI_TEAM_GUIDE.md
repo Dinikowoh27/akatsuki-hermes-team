@@ -32,7 +32,7 @@ Jangan sampai kebalik seperti setup sebelumnya:
 | **Deep Hunter** | @Pain02_bot | `pain` | ❌ OFF | Code |
 | **Fast Executor** | @Itachi_bot | `itachi` | ❌ OFF | — |
 | **Automation** | @Sasori_bot | `sasori` | ❌ OFF | Daemon |
-| **Specialists** | masing-masing | `obito`, `kisame`, `konan`, `deidara`, `zetsu`, `treasury`, `madara` | ❌ OFF | — |
+| **Specialists** | masing-masing | `obito`, `kisame`, `konan`, `deidara`, `zetsu`, `madara` | ❌ OFF | — |
 
 **Poin kunci:**
 - Hanya **1 profil** yang punya `dispatch_in_gateway: true`.
@@ -120,7 +120,7 @@ chmod +x setup.sh
 ```
 
 Script ini akan:
-- Membuat profil orchestrator & 10 worker.
+- Membuat profil orchestrator & 9 worker.
 - Generate `config.yaml` dari template.
 - Patch `.env` tiap profil.
 - Copy skill `akatsuki-dispatch.md` ke `~/.hermes/skills/custom/akatsuki-dispatch/`.
@@ -161,7 +161,7 @@ systemctl --user enable --now hermes-slevensyai hermes-pain hermes-itachi hermes
 Start semua worker:
 
 ```bash
-for p in slevensyai pain itachi sasori obito kisame konan deidara zetsu treasury madara; do
+for p in slevensyai pain itachi sasori obito kisame konan deidara zetsu madara; do
   systemctl --user enable --now hermes-$p
 done
 ```
@@ -306,9 +306,8 @@ Bisa otomatis pakai script `create-topics.py`, atau manual:
 | 18 | 🎨 Konan Studio | @Konan_bot |
 | 19 | 🚀 Deidara Arena | @Deidara_bot |
 | 20 | 🔍 Zetsu Intel | @Zetsu_bot |
-| 21 | 💰 Treasury Vault | @Treasury_bot |
-| 22 | 🔥 Madara Dojo | @Madara_bot |
-| 23 | 🌀 Lounge | all bots |
+| 21 | 🔥 Madara Dojo | @Madara_bot |
+| 22 | 🌀 Lounge | all bots |
 
 ### Kenapa `allowed_topics` Penting?
 
@@ -417,7 +416,6 @@ Orchestrator memakai skill `akatsuki-dispatch.md` untuk memutuskan assign ke sia
 | Design / UI/UX / mockup | Konan |
 | Marketing / growth / content | Deidara |
 | Research / OSINT / intel | Zetsu |
-| Trading / portfolio / wallet | Treasury |
 | Security / bug bounty / red team | Madara |
 | General / unclear | Pain |
 
@@ -492,7 +490,7 @@ dbus-send --session --dest=org.freedesktop.systemd1 \
 ### Q: Kenapa Pain bukan orchestrator?
 **A:** Karena bot utamanya adalah @SLEVENSYAIBOT. Kalau Pain jadi orchestrator, @SLEVENSYAIBOT jadi bot personal yang nggak bisa dispatch. Pola KARA: Eida = orchestrator, Code/Daemon = workers. Di sini: @SLEVENSYAIBOT = Eida, Pain/Itachi/Sasori = Code/Daemon.
 
-### Q: Apakah 10 worker harus online 24/7?
+### Q: Apakah 9 worker harus online 24/7?
 **A:** Tidak wajib. Bisa start on-demand. Tapi kalau mau dispatch langsung jalan, worker yang sering dipakai (Pain, Itachi, Sasori) sebaiknya online.
 
 ### Q: Bisa nggak pakai nama profil lain?
@@ -511,7 +509,7 @@ dbus-send --session --dest=org.freedesktop.systemd1 \
 | Profile | Model | Estimasi/bulan |
 |---|---|---|
 | Orchestrator (`slevensyai`) | claude-sonnet-4 | ~$30 |
-| Pain / Sasori / Obito / Treasury | deepseek-v4-flash | ~$10 each |
+| Pain / Sasori / Obito | deepseek-v4-flash | ~$10 each |
 | Itachi / Kisame / Zetsu | kimi-k2.7 | ~$30–50 each |
 | Konan | gpt-4o | ~$25 |
 | Deidara | gpt-4o-mini | ~$10 |

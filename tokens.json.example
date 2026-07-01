@@ -46,17 +46,12 @@
         "topic_id": null
       },
       "zetsu": {
-        "bot_token": "123456789:IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+        "bot_token": "123456789:***",
         "topic_name": "🔍 Zetsu Intel",
         "topic_id": null
       },
-      "treasury": {
-        "bot_token": "123456789:JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ",
-        "topic_name": "💰 Treasury Vault",
-        "topic_id": null
-      },
       "madara": {
-        "bot_token": "123456789:KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
+        "bot_token": "123456789:***",
         "topic_name": "🔥 Madara Dojo",
         "topic_id": null
       }
@@ -110,12 +105,6 @@
     },
     "zetsu": {
       "default": "kimi-k2.7",
-      "provider": "custom",
-      "base_url": "https://llm.kimchi.dev/openai/v1",
-      "api_key_env": "KIMCHI_API_KEY"
-    },
-    "treasury": {
-      "default": "deepseek-v4-flash",
       "provider": "custom",
       "base_url": "https://llm.kimchi.dev/openai/v1",
       "api_key_env": "KIMCHI_API_KEY"
