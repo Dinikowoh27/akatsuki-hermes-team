@@ -1,0 +1,129 @@
+{
+  "_comment": "Copy file ini ke tokens.json dan isi dengan data asli. Jangan di-commit ke GitHub!",
+  "telegram": {
+    "group_id": "-100XXXXXXXXX",
+    "allowed_users": [123456789],
+    "orchestrator": {
+      "profile_name": "slevensyai",
+      "bot_token": "123456789:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "topic_name": "👑 Slevensyai HQ",
+      "topic_id": null
+    },
+    "workers": {
+      "pain": {
+        "bot_token": "123456789:BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "topic_name": "👑 Pain",
+        "topic_id": null
+      },
+      "itachi": {
+        "bot_token": "123456789:CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+        "topic_name": "💻 Itachi Lab",
+        "topic_id": null
+      },
+      "sasori": {
+        "bot_token": "123456789:DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+        "topic_name": "🤖 Sasori Workshop",
+        "topic_id": null
+      },
+      "obito": {
+        "bot_token": "123456789:EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE",
+        "topic_name": "⚙️ Obito Ops",
+        "topic_id": null
+      },
+      "kisame": {
+        "bot_token": "123456789:FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+        "topic_name": "🌊 Kisame Data",
+        "topic_id": null
+      },
+      "konan": {
+        "bot_token": "123456789:GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG",
+        "topic_name": "🎨 Konan Studio",
+        "topic_id": null
+      },
+      "deidara": {
+        "bot_token": "123456789:HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH",
+        "topic_name": "🚀 Deidara Arena",
+        "topic_id": null
+      },
+      "zetsu": {
+        "bot_token": "123456789:IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+        "topic_name": "🔍 Zetsu Intel",
+        "topic_id": null
+      },
+      "treasury": {
+        "bot_token": "123456789:JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ",
+        "topic_name": "💰 Treasury Vault",
+        "topic_id": null
+      },
+      "madara": {
+        "bot_token": "123456789:KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
+        "topic_name": "🔥 Madara Dojo",
+        "topic_id": null
+      }
+    }
+  },
+  "models": {
+    "orchestrator": {
+      "default": "claude-sonnet-4",
+      "provider": "openrouter",
+      "api_key_env": "OPENROUTER_API_KEY"
+    },
+    "pain": {
+      "default": "deepseek-v4-flash",
+      "provider": "custom",
+      "base_url": "https://llm.kimchi.dev/openai/v1",
+      "api_key_env": "KIMCHI_API_KEY"
+    },
+    "itachi": {
+      "default": "kimi-k2.7",
+      "provider": "custom",
+      "base_url": "https://llm.kimchi.dev/openai/v1",
+      "api_key_env": "KIMCHI_API_KEY"
+    },
+    "sasori": {
+      "default": "deepseek-v4-flash",
+      "provider": "custom",
+      "base_url": "https://llm.kimchi.dev/openai/v1",
+      "api_key_env": "KIMCHI_API_KEY"
+    },
+    "obito": {
+      "default": "deepseek-v4-flash",
+      "provider": "custom",
+      "base_url": "https://llm.kimchi.dev/openai/v1",
+      "api_key_env": "KIMCHI_API_KEY"
+    },
+    "kisame": {
+      "default": "kimi-k2.7",
+      "provider": "custom",
+      "base_url": "https://llm.kimchi.dev/openai/v1",
+      "api_key_env": "KIMCHI_API_KEY"
+    },
+    "konan": {
+      "default": "gpt-4o",
+      "provider": "openrouter",
+      "api_key_env": "OPENROUTER_API_KEY"
+    },
+    "deidara": {
+      "default": "gpt-4o-mini",
+      "provider": "openrouter",
+      "api_key_env": "OPENROUTER_API_KEY"
+    },
+    "zetsu": {
+      "default": "kimi-k2.7",
+      "provider": "custom",
+      "base_url": "https://llm.kimchi.dev/openai/v1",
+      "api_key_env": "KIMCHI_API_KEY"
+    },
+    "treasury": {
+      "default": "deepseek-v4-flash",
+      "provider": "custom",
+      "base_url": "https://llm.kimchi.dev/openai/v1",
+      "api_key_env": "KIMCHI_API_KEY"
+    },
+    "madara": {
+      "default": "claude-opus-4",
+      "provider": "openrouter",
+      "api_key_env": "OPENROUTER_API_KEY"
+    }
+  }
+}

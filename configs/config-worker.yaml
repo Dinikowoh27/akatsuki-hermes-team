@@ -1,0 +1,49 @@
+# ============================================================
+# Worker Profile Config — Akatsuki Team
+# ============================================================
+# Letakkan file ini di: ~/.hermes/profiles/<WORKER_NAME>/config.yaml
+# Ganti <WORKER_NAME>, <WORKER_TOPIC_ID>, dan model sesuai role.
+
+model:
+  default: deepseek-v4-flash
+  provider: custom
+  base_url: https://llm.kimchi.dev/openai/v1
+  api_key: ${KIMCHI_API_KEY}
+
+agent:
+  max_turns: 80
+
+# Toolset dasar — tambahkan sesuai role (lihat AKATSUKI_TEAM_GUIDE.md)
+toolsets:
+  - hermes-cli
+  - terminal
+  - file
+  - web
+
+notification_sources: '*'
+
+kanban:
+  # MUST sama dengan nama profil orchestrator (bot utama @SLEVENSYAIBOT)
+  orchestrator_profile: <ORCHESTRATOR_NAME>
+  # JANGAN aktifkan dispatch di worker
+  # dispatch_in_gateway: false
+
+telegram:
+  reactions: false
+  channel_prompts: {}
+  allowed_chats: ''
+  allowed_users:
+    - <OWNER_USER_ID>
+  extra:
+    rich_messages: true
+    # Topic khusus worker ini + lounge
+    allowed_topics:
+      - <WORKER_TOPIC_ID>
+      - <LOUNGE_TOPIC_ID>
+
+display:
+  personality: technical
+  compact: false
+
+context:
+  engine: compressor

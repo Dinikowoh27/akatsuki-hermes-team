@@ -1,275 +1,230 @@
-# 🌀 Akatsuki AI Team — Hermes Kanban Setup Guide
+# 🌀 Akatsuki Hermes Team — Panduan Setup yang Benar
 
-> **Multi-Agent Autonomous Team** menggunakan Hermes Agent Kanban System  
-> Terinspirasi dari KARA Team (EiDA-Code-Daemon) + BREACH v5 capabilities
+> **Multi-Agent AI Team** pakai Hermes Agent Kanban System.  
+> **Perbaikan utama repo ini:** bot utama **@SLEVENSYAIBOT** = orchestrator, **Pain & 9 Akatsuki lainnya** = workers.
 
 ---
 
-## 📋 Table of Contents
+## 📋 Daftar Isi
 
-1. [Architecture Overview](#architecture-overview)
-2. [Team Structure](#team-structure)
-3. [Profile Setup](#profile-setup)
-4. [Skill Assignments](#skill-assignments)
-5. [Workflow & Dispatch Rules](#workflow--dispatch-rules)
-6. [Model Configuration](#model-configuration)
-7. [Installation Steps](#installation-steps)
-8. [Example Tasks](#example-tasks)
-9. [Monitoring & Logs](#monitoring--logs)
+1. [Konsep yang Benar](#konsep-yang-benar)
+2. [Arsitektur](#arsitektur)
+3. [Persiapan](#persiapan)
+4. [Step-by-Step Setup](#step-by-step-setup)
+5. [Konfigurasi Manual (kalau mau tau detail)](#konfigurasi-manual)
+6. [Telegram Topics & allowed_topics](#telegram-topics--allowed_topics)
+7. [systemd Services](#systemd-services)
+8. [Testing](#testing)
+9. [Dispatch Rules](#dispatch-rules)
 10. [Troubleshooting](#troubleshooting)
+11. [FAQ](#faq)
+12. [Estimasi Biaya](#estimasi-biaya)
 
 ---
 
-## Architecture Overview
+## Konsep yang Benar
+
+Jangan sampai kebalik seperti setup sebelumnya:
+
+| Role | Bot | Profile | Dispatcher? | Analogi KARA |
+|---|---|---|---|---|
+| **Orchestrator** | @SLEVENSYAIBOT | `slevensyai` / `default` | ✅ ON | Eida |
+| **Deep Hunter** | @Pain02_bot | `pain` | ❌ OFF | Code |
+| **Fast Executor** | @Itachi_bot | `itachi` | ❌ OFF | — |
+| **Automation** | @Sasori_bot | `sasori` | ❌ OFF | Daemon |
+| **Specialists** | masing-masing | `obito`, `kisame`, `konan`, `deidara`, `zetsu`, `treasury`, `madara` | ❌ OFF | — |
+
+**Poin kunci:**
+- Hanya **1 profil** yang punya `dispatch_in_gateway: true`.
+- Semua worker harus set `orchestrator_profile: <nama_orchestrator>`.
+- Pain adalah **salah satu worker**, bukan orchestrator.
+
+---
+
+## Arsitektur
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    👑 Pain (Orchestrator)                    │
-│              Strategy · Decomposition · Dispatch             │
-└────────────┬────────────────────────────────────┬───────────┘
-             │                                    │
-    ┌────────▼────────┐                  ┌───────▼────────┐
-    │ 💻 Itachi       │                  │ 🤖 Sasori      │
-    │ Deep Hunter     │                  │ Fast Executor  │
-    │ Phase 0-5       │                  │ Automation     │
-    └────────┬────────┘                  └───────┬────────┘
-             │                                    │
-             └──────────┬─────────────────────────┘
-                        │
-         ┌──────────────┴──────────────────────────────┐
-         │        Specialist Profiles (On-Demand)      │
-         ├─────────────────────────────────────────────┤
-         │ ⚙️  Obito      DevOps & Infrastructure      │
-         │ 🌊 Kisame     Data & Backend Engineering    │
-         │ 🎨 Konan      UI/UX Design                  │
-         │ 🚀 Deidara    Growth & Marketing            │
-         │ 🔍 Zetsu      Intelligence & Research       │
-         │ 💰 Treasury   Trading & Portfolio Mgmt      │
-         │ 🔥 Madara     Security & Red Team           │
-         └─────────────────────────────────────────────┘
+User (DM / Group topic)
+        │
+        ▼
+┌─────────────────────────────┐
+│  Orchestrator               │
+│  @SLEVENSYAIBOT             │
+│  gateway + kanban dispatcher│
+└──────────────┬──────────────┘
+               │
+    ┌──────────┼──────────┐
+    ▼          ▼          ▼
+┌───────┐ ┌────────┐ ┌─────────┐
+│ Pain  │ │ Itachi │ │ Sasori  │
+└───┬───┘ └───┬────┘ └────┬────┘
+    │         │           │
+    ▼         ▼           ▼
+ Obito · Kisame · Konan · Deidara · Zetsu · Treasury · Madara
 ```
 
-**Design Philosophy:**
-- **3 Core Profiles** handle 80% of work (Pain → Itachi/Sasori)
-- **7 Specialist Profiles** triggered on-demand via skills
-- **Kanban Board** as central orchestration
-- **Topic-based isolation** (setiap project = 1 topic Telegram)
+Alur kerja:
+1. User kirim tugas ke **@SLEVENSYAIBOT**.
+2. Orchestrator decompose → buat Kanban card → assign ke worker.
+3. Worker mengerjakan, report balik ke orchestrator.
+4. Orchestrator rangkum hasil ke user.
 
 ---
 
-## Team Structure
+## Persiapan
 
-### 🎯 Core Triad
+Sebelum jalankan script:
 
-| Profile | Role | Primary Function | Model Recommendation |
-|---------|------|-----------------|---------------------|
-| **Pain** | Orchestrator | Task decomposition, dispatch, final approval, strategy | `claude-sonnet-4` or `gpt-4o` |
-| **Itachi** | Deep Hunter | Full-stack dev, architecture, security review (Phase 0-5) | `kimi-k2.7` or `claude-opus-4` |
-| **Sasori** | Fast Executor | Automation, browser agent, airdrop bot, quick fixes | `deepseek-v4-flash` or `gpt-4o-mini` |
-
-### 🛠️ Specialist Profiles
-
-| Profile | Role | Triggered When | Model |
-|---------|------|---------------|-------|
-| **Obito** | DevOps Engineer | Deploy, VPS setup, CI/CD, monitoring | `deepseek-v4-flash` |
-| **Kisame** | Data Engineer | Database design, ETL, API backend | `kimi-k2.7` |
-| **Konan** | UI/UX Designer | Wireframe, prototype, design system | `gpt-4o` or `claude-sonnet-4` |
-| **Deidara** | Growth Hacker | Marketing campaign, viral content, SEO | `gpt-4o-mini` |
-| **Zetsu** | Intelligence Analyst | Research, OSINT, recon, alpha hunting | `kimi-k2.7` |
-| **Treasury** | Trader & Portfolio Manager | Meme coin sniping, portfolio, PnL tracking | `deepseek-v4-flash` |
-| **Madara** | Security Specialist | Bug bounty, penetration test, red team | `claude-opus-4` |
+1. **Hermes Agent sudah terinstall** di VPS.
+2. **API keys** tersedia (OpenRouter, Kimchi, dll) → simpan di `~/.hermes/.env`.
+3. **10 bot Telegram** sudah dibuat via @BotFather:
+   - Satu bot untuk orchestrator (@SLEVENSYAIBOT).
+   - Sembilan bot untuk workers.
+4. **Semua bot sudah dimasukkan ke grup Telegram** sebagai admin.
+5. **Group Privacy OFF** untuk semua bot via @BotFather.
+6. **Topic/Forum sudah di-enable** di grup Telegram.
 
 ---
 
-## Profile Setup
+## Step-by-Step Setup
 
-### 1. Create Profiles
+### 1. Clone Repo
 
 ```bash
-# Di VPS / local machine
-cd ~/.hermes/profiles
+git clone https://github.com/Dinikowoh27/akatsuki-hermes-team.git
+cd akatsuki-hermes-team
+```
 
-# Create each profile
-for profile in pain itachi sasori obito kisame konan deidara zetsu treasury madara; do
-    mkdir -p $profile
-    touch $profile/config.yaml
-    mkdir -p $profile/{skills,memories,cron,sessions}
+### 2. Siapkan `tokens.json`
+
+```bash
+cp tokens.json.example tokens.json
+nano tokens.json
+```
+
+Isi dengan data asli:
+- `group_id`: ID grup Telegram (contoh: `-1001234567890`).
+- `allowed_users`: Telegram user ID owner (contoh: `[123456789]`).
+- `orchestrator.profile_name`: nama profil bot utama (contoh: `slevensyai`).
+- `orchestrator.bot_token`: token @SLEVENSYAIBOT.
+- `orchestrator.topic_name`: nama topic orchestrator (contoh: `👑 Slevensyai HQ`).
+- `workers.<name>.bot_token`: token tiap worker.
+- `workers.<name>.topic_name`: nama topic tiap worker.
+- Model & provider di bagian `models`.
+
+### 3. Jalankan Setup
+
+```bash
+chmod +x setup.sh
+./setup.sh tokens.json
+```
+
+Script ini akan:
+- Membuat profil orchestrator & 10 worker.
+- Generate `config.yaml` dari template.
+- Patch `.env` tiap profil.
+- Copy skill `akatsuki-dispatch.md` ke `~/.hermes/skills/custom/akatsuki-dispatch/`.
+
+### 4. Buat Forum Topics
+
+```bash
+python3 scripts/create-topics.py tokens.json
+```
+
+Script pakai bot orchestrator untuk membuat topic di grup. Setelah sukses, `tokens.json` akan terisi `topic_id`.
+
+**Kalau ada topic yang sudah dibuat manual:** isi `topic_id` di `tokens.json` secara manual.
+
+### 5. Update Config & .env dengan topic_id
+
+```bash
+./setup.sh tokens.json
+```
+
+Jalankan lagi supaya `topic_id` masuk ke `config.yaml` dan `.env`.
+
+### 6. Install systemd Services
+
+```bash
+chmod +x scripts/install-systemd.sh
+./scripts/install-systemd.sh tokens.json
+```
+
+### 7. Start Services
+
+Start orchestrator + core workers dulu:
+
+```bash
+systemctl --user enable --now hermes-slevensyai hermes-pain hermes-itachi hermes-sasori
+```
+
+Start semua worker:
+
+```bash
+for p in slevensyai pain itachi sasori obito kisame konan deidara zetsu treasury madara; do
+  systemctl --user enable --now hermes-$p
 done
 ```
 
-### 2. Configure Each Profile
+**Catatan:** Di dalam running gateway, `systemctl restart` bisa diblokir oleh gateway guard. Kalau perlu restart dari luar, gunakan:
 
-#### 👑 Pain (Orchestrator) — `~/.hermes/profiles/pain/config.yaml`
+```bash
+dbus-send --session --dest=org.freedesktop.systemd1 \
+  --type=method_call --print-reply \
+  /org/freedesktop/systemd1 \
+  org.freedesktop.systemd1.Manager.RestartUnit \
+  string:"hermes-slevensyai.service" string:"replace"
+```
+
+---
+
+## Konfigurasi Manual
+
+Kalau mau setup manual tanpa script, ini config yang paling penting.
+
+### Orchestrator (`~/.hermes/profiles/slevensyai/config.yaml`)
 
 ```yaml
 model:
   default: claude-sonnet-4
-  provider: openrouter  # atau custom provider
+  provider: openrouter
   api_key: ${OPENROUTER_API_KEY}
 
 agent:
   max_turns: 90
-  reasoning_effort: medium
 
 toolsets:
   - hermes-cli
   - terminal
   - file
   - kanban
+  - delegation
 
-display:
-  personality: technical
-  compact: false
+notification_sources: '*'
 
 kanban:
-  orchestrator_profile: pain  # IMPORTANT: Pain sebagai orchestrator
+  orchestrator_profile: slevensyai   # MUST sama dengan nama profil ini
   dispatch_in_gateway: true
   dispatch_interval_seconds: 60
   auto_decompose: true
   auto_decompose_per_tick: 3
+
+telegram:
+  reactions: false
+  allowed_users:
+    - 123456789
+  extra:
+    rich_messages: true
+    allowed_topics:
+      - 12   # Orchestrator HQ
+      - 22   # Lounge
 ```
 
-#### 💻 Itachi (Deep Hunter) — `~/.hermes/profiles/itachi/config.yaml`
-
-```yaml
-model:
-  default: kimi-k2.7
-  provider: custom
-  base_url: https://llm.kimchi.dev/openai/v1
-  api_key: ${KIMCHI_API_KEY}
-
-agent:
-  max_turns: 90
-  reasoning_effort: high
-
-toolsets:
-  - hermes-cli
-  - terminal
-  - file
-  - web
-  - github
-  - coding
-
-display:
-  personality: technical
-  compact: false
-```
-
-#### 🤖 Sasori (Fast Executor) — `~/.hermes/profiles/sasori/config.yaml`
+### Worker (`~/.hermes/profiles/pain/config.yaml`)
 
 ```yaml
 model:
   default: deepseek-v4-flash
-  provider: custom
-  base_url: https://llm.kimchi.dev/openai/v1
-  api_key: ${KIMCHI_API_KEY}
-
-agent:
-  max_turns: 50  # faster iterations
-  reasoning_effort: low
-
-toolsets:
-  - hermes-cli
-  - terminal
-  - file
-  - browser
-  - coding
-
-display:
-  personality: concise
-  compact: true
-```
-
-#### ⚙️ Obito (DevOps) — `~/.hermes/profiles/obito/config.yaml`
-
-```yaml
-model:
-  default: deepseek-v4-flash
-  provider: custom
-  base_url: https://llm.kimchi.dev/openai/v1
-  api_key: ${KIMCHI_API_KEY}
-
-agent:
-  max_turns: 60
-
-toolsets:
-  - hermes-cli
-  - terminal
-  - file
-
-display:
-  personality: technical
-```
-
-#### 🌊 Kisame (Data Engineer) — `~/.hermes/profiles/kisame/config.yaml`
-
-```yaml
-model:
-  default: kimi-k2.7
-  provider: custom
-  base_url: https://llm.kimchi.dev/openai/v1
-  api_key: ${KIMCHI_API_KEY}
-
-agent:
-  max_turns: 70
-
-toolsets:
-  - hermes-cli
-  - terminal
-  - file
-  - web
-
-display:
-  personality: technical
-```
-
-#### 🎨 Konan (UI/UX Designer) — `~/.hermes/profiles/konan/config.yaml`
-
-```yaml
-model:
-  default: gpt-4o
-  provider: openrouter
-  api_key: ${OPENROUTER_API_KEY}
-
-agent:
-  max_turns: 60
-
-toolsets:
-  - hermes-cli
-  - file
-  - vision
-  - web
-
-display:
-  personality: creative
-```
-
-#### 🚀 Deidara (Growth Hacker) — `~/.hermes/profiles/deidara/config.yaml`
-
-```yaml
-model:
-  default: gpt-4o-mini
-  provider: openrouter
-  api_key: ${OPENROUTER_API_KEY}
-
-agent:
-  max_turns: 50
-
-toolsets:
-  - hermes-cli
-  - file
-  - web
-  - social-media
-
-display:
-  personality: creative
-```
-
-#### 🔍 Zetsu (Intelligence) — `~/.hermes/profiles/zetsu/config.yaml`
-
-```yaml
-model:
-  default: kimi-k2.7
   provider: custom
   base_url: https://llm.kimchi.dev/openai/v1
   api_key: ${KIMCHI_API_KEY}
@@ -279,630 +234,301 @@ agent:
 
 toolsets:
   - hermes-cli
-  - web
-  - file
-  - terminal
-
-display:
-  personality: technical
-```
-
-#### 💰 Treasury (Trader) — `~/.hermes/profiles/treasury/config.yaml`
-
-```yaml
-model:
-  default: deepseek-v4-flash
-  provider: custom
-  base_url: https://llm.kimchi.dev/openai/v1
-  api_key: ${KIMCHI_API_KEY}
-
-agent:
-  max_turns: 60
-
-toolsets:
-  - hermes-cli
   - terminal
   - file
   - web
+  - coding
 
-display:
-  personality: concise
+notification_sources: '*'
+
+kanban:
+  orchestrator_profile: slevensyai   # MUST ke orchestrator
+  # dispatch_in_gateway: false       # default false, jangan diaktifkan
+
+telegram:
+  reactions: false
+  allowed_users:
+    - 123456789
+  extra:
+    rich_messages: true
+    allowed_topics:
+      - 13   # Pain topic
+      - 22   # Lounge
 ```
 
-#### 🔥 Madara (Security) — `~/.hermes/profiles/madara/config.yaml`
-
-```yaml
-model:
-  default: claude-opus-4
-  provider: openrouter
-  api_key: ${OPENROUTER_API_KEY}
-
-agent:
-  max_turns: 90
-  reasoning_effort: high
-
-toolsets:
-  - hermes-cli
-  - terminal
-  - file
-  - web
-  - security
-
-display:
-  personality: technical
-```
-
----
-
-## Skill Assignments
-
-### Core Skills (Load Semua Profile)
+### `.env` Worker
 
 ```bash
-~/.hermes/skills/
-├── software-development/
-│   ├── systematic-debugging
-│   ├── test-driven-development
-│   └── requesting-code-review
-├── github/
-│   ├── github-pr-workflow
-│   ├── github-code-review
-│   └── github-repo-management
-└── devops/
-    ├── hermes-kanban-team
-    ├── kanban-orchestrator  # Pain only
-    └── kanban-worker        # Workers only
+TELEGRAM_BOT_TOKEN=123456789:ABC...
+TELEGRAM_ALLOWED_USERS=123456789
+TELEGRAM_HOME_CHANNEL=-1001234567890:13
+TELEGRAM_HOME_CHANNEL_NAME=Pain
+TELEGRAM_CRON_THREAD_ID=13
+TELEGRAM_ALLOWED_TOPICS=13,22
 ```
 
-### Specialist Skills (Per Profile)
-
-#### 👑 Pain
-```
-skills/devops/kanban-orchestrator
-skills/devops/bugbounty-dispatch (kalau ada bug bounty workflow)
-skills/software-development/writing-plans
-```
-
-#### 💻 Itachi
-```
-skills/software-development/* (all)
-skills/github/* (all)
-skills/mlops/* (jika ada ML project)
-skills/devops/nextjs-standalone-deploy
-```
-
-#### 🤖 Sasori
-```
-skills/automation/browser-agent
-skills/devops/kanban-worker
-skills/productivity/airtable (jika pakai Airtable)
-skills/social-media/xurl (X automation)
-```
-
-#### ⚙️ Obito
-```
-skills/devops/cloudflare-tunnel
-skills/devops/vps-security-audit
-skills/devops/nextjs-standalone-deploy
-skills/devops/solana-agent-deploy (jika ada Solana bot)
-```
-
-#### 🌊 Kisame
-```
-skills/data-science/jupyter-live-kernel (jika pakai Jupyter)
-skills/mlops/models/* (jika ada ML backend)
-```
-
-#### 🎨 Konan
-```
-skills/creative/sketch
-skills/creative/design-md
-skills/creative/excalidraw
-skills/creative/popular-web-designs
-```
-
-#### 🚀 Deidara
-```
-skills/social-media/xurl
-skills/media/gif-search
-skills/productivity/notion (jika pakai Notion CMS)
-skills/creative/humanizer (humanize AI text)
-```
-
-#### 🔍 Zetsu
-```
-skills/research/arxiv
-skills/research/polymarket
-skills/web/* (all web research)
-skills/security/bugbounty-recon
-```
-
-#### 💰 Treasury
-```
-skills/defi/meridian (jika pakai Meridian LP agent)
-skills/superagent-crypto/* (jika ada crypto agent)
-```
-
-#### 🔥 Madara
-```
-skills/security/* (all)
-skills/red-teaming/godmode (jailbreak testing)
-```
-
----
-
-## Workflow & Dispatch Rules
-
-### Kanban Board Topics (Telegram)
-
-Setup **Telegram Group** dengan topics untuk isolasi:
-
-| Topic ID | Name | Assignee | Use Case |
-|----------|------|----------|----------|
-| 12 | 👑 Pain HQ | Pain | Orchestration center, daily standup |
-| 13 | 💻 Itachi Lab | Itachi | Deep dev work, architecture |
-| 14 | 🤖 Sasori Workshop | Sasori | Automation, quick fixes |
-| 15 | ⚙️ Obito Ops | Obito | Infrastructure, deployments |
-| 16 | 🌊 Kisame Data | Kisame | Backend, database, ETL |
-| 17 | 🎨 Konan Studio | Konan | Design work |
-| 18 | 🚀 Deidara Arena | Deidara | Marketing campaigns |
-| 19 | 🔍 Zetsu Intel | Zetsu | Research reports |
-| 20 | 💰 Treasury Vault | Treasury | Trading, PnL |
-| 21 | 🔥 Madara Dojo | Madara | Security findings |
-| 22 | 🌀 Lounge | All | General chat, off-topic |
-
-### Dispatch Strategy (Pain's Logic)
-
-**Pain** decomposes tasks dan assign berdasarkan:
-
-```yaml
-# ~/.hermes/profiles/pain/skills/akatsuki-dispatch.md
----
-name: akatsuki-dispatch
-description: Decomposition and dispatch playbook for Pain orchestrator
----
-
-## Dispatch Rules
-
-### Phase Detection
-1. **Planning/Architecture** → Itachi (deep analysis)
-2. **Quick Fix/Automation** → Sasori (fast execution)
-3. **Infrastructure** → Obito
-4. **Database/Backend** → Kisame
-5. **UI/UX** → Konan
-6. **Marketing** → Deidara
-7. **Research** → Zetsu
-8. **Trading** → Treasury
-9. **Security** → Madara
-
-### Multi-Agent Tasks
-- **Full-stack feature**: Pain → Itachi (backend) + Konan (design) + Sasori (automation)
-- **Product launch**: Pain → Itachi (dev) + Obito (deploy) + Deidara (marketing)
-- **Airdrop campaign**: Pain → Zetsu (research) + Sasori (bot) + Treasury (wallet mgmt)
-- **Bug bounty**: Pain → Madara (recon) + Itachi (exploit dev) + Treasury (payout)
-
-### Anti-Patterns (Don't Assign)
-- ❌ Konan untuk backend code
-- ❌ Sasori untuk deep architecture
-- ❌ Deidara untuk security audit
-- ❌ Treasury untuk UI design
-
-### Escalation
-- Stuck > 2 attempts → escalate to Pain
-- Security issue → always loop Madara
-- Performance issue → loop Itachi + Obito
-```
-
----
-
-## Model Configuration
-
-### Recommended Model Allocation
-
-| Profile | Model | Provider | Cost/1M tokens | Use Case |
-|---------|-------|----------|---------------|----------|
-| Pain | `claude-sonnet-4` | OpenRouter | $3 | Strategic thinking |
-| Itachi | `kimi-k2.7` | Kimchi | ~$0.5 | Deep dev, long context |
-| Sasori | `deepseek-v4-flash` | Kimchi | ~$0.1 | Fast automation |
-| Obito | `deepseek-v4-flash` | Kimchi | ~$0.1 | DevOps scripts |
-| Kisame | `kimi-k2.7` | Kimchi | ~$0.5 | Data analysis |
-| Konan | `gpt-4o` | OpenRouter | $2.5 | Creative design |
-| Deidara | `gpt-4o-mini` | OpenRouter | $0.15 | Content generation |
-| Zetsu | `kimi-k2.7` | Kimchi | ~$0.5 | Research, long docs |
-| Treasury | `deepseek-v4-flash` | Kimchi | ~$0.1 | Trading logic |
-| Madara | `claude-opus-4` | OpenRouter | $15 | Complex security |
-
-**Monthly Budget Estimate** (moderate usage):
-- Pain: $30
-- Itachi: $50
-- Sasori: $10
-- Specialists: $20 each
-- **Total: ~$200-300/month**
-
----
-
-## Installation Steps
-
-### 1. Prerequisites
+### `.env` Orchestrator
 
 ```bash
-# Install Hermes Agent (latest)
-curl -fsSL https://hermes.run/install.sh | bash
-
-# Set up .env
-cat >> ~/.hermes/.env <<EOF
-OPENROUTER_API_KEY=sk-or-v1-...
-KIMCHI_API_KEY=castai_v1_...
-TELEGRAM_BOT_TOKEN=...
-TELEGRAM_GROUP_ID=-100...
-EOF
+TELEGRAM_BOT_TOKEN=987654321:XYZ...
+TELEGRAM_ALLOWED_USERS=123456789
+TELEGRAM_HOME_CHANNEL=-1001234567890:12
+TELEGRAM_HOME_CHANNEL_NAME=Slevensyai HQ
+TELEGRAM_CRON_THREAD_ID=12
+TELEGRAM_ALLOWED_TOPICS=12,22
 ```
 
-### 2. Create All Profiles
+---
 
-```bash
-# Run profile creator script
-cat > ~/create_akatsuki_profiles.sh <<'SCRIPT'
-#!/bin/bash
-PROFILES=(pain itachi sasori obito kisame konan deidara zetsu treasury madara)
+## Telegram Topics & allowed_topics
 
-for profile in "${PROFILES[@]}"; do
-    echo "Creating profile: $profile"
-    mkdir -p ~/.hermes/profiles/$profile/{skills,memories,cron,sessions}
-    
-    # Copy config template (sesuaikan dengan config di atas)
-    # touch ~/.hermes/profiles/$profile/config.yaml
-done
+### Membuat Topics
 
-echo "All profiles created!"
-SCRIPT
+Bisa otomatis pakai script `create-topics.py`, atau manual:
 
-chmod +x ~/create_akatsuki_profiles.sh
-bash ~/create_akatsuki_profiles.sh
-```
+1. Buka grup → buat topic dengan nama sesuai daftar.
+2. Untuk dapat `topic_id`, buka topic di Telegram Web/Desktop, lihat URL:
+   ```
+   https://web.telegram.org/a/#-1001234567890_13
+   ```
+   Angka `13` setelah underscore adalah `topic_id`.
 
-### 3. Setup Telegram Topics
+### Daftar Topic Rekomendasi
 
-1. Buat Telegram Group baru
-2. Enable Topics: Group Settings → Topics → Enable
-3. Create topics sesuai tabel di atas
-4. Note topic IDs (inspect URL atau via bot)
-5. Update `~/.hermes/profiles/pain/config.yaml`:
+| Topic ID | Nama | Bot |
+|:---:|:---|:---|
+| 12 | 👑 Slevensyai HQ | @SLEVENSYAIBOT |
+| 13 | 👑 Pain | @Pain02_bot |
+| 14 | 💻 Itachi Lab | @Itachi_bot |
+| 15 | 🤖 Sasori Workshop | @Sasori_bot |
+| 16 | ⚙️ Obito Ops | @Obito_bot |
+| 17 | 🌊 Kisame Data | @Kisame_bot |
+| 18 | 🎨 Konan Studio | @Konan_bot |
+| 19 | 🚀 Deidara Arena | @Deidara_bot |
+| 20 | 🔍 Zetsu Intel | @Zetsu_bot |
+| 21 | 💰 Treasury Vault | @Treasury_bot |
+| 22 | 🔥 Madara Dojo | @Madara_bot |
+| 23 | 🌀 Lounge | all bots |
+
+### Kenapa `allowed_topics` Penting?
+
+Tanpa `allowed_topics`, **semua bot akan merespon di setiap topic**. Jadi wajib set di setiap profile:
 
 ```yaml
 telegram:
   extra:
     allowed_topics:
-      - 12  # Pain HQ
-      - 13  # Itachi Lab
-      - 14  # Sasori Workshop
-      # ... dst
+      - <topic_id_worker_ini>
+      - <topic_id_lounge>
 ```
 
-### 4. Start Gateway for Each Profile
+---
 
-```bash
-# Terminal 1: Pain (orchestrator)
-hermes gateway --profile pain
+## systemd Services
 
-# Terminal 2: Itachi
-hermes gateway --profile itachi
+Template service yang di-generate:
 
-# Terminal 3: Sasori
-hermes gateway --profile sasori
-
-# Terminal 4-10: Specialists (on-demand, bisa pakai systemd)
-hermes gateway --profile obito
-hermes gateway --profile kisame
-# ... dst
-```
-
-**Production Setup (systemd):**
-
-```bash
-# Generate systemd services
-for profile in pain itachi sasori obito kisame konan deidara zetsu treasury madara; do
-sudo tee /etc/systemd/system/hermes-${profile}.service > /dev/null <<EOF
+```ini
 [Unit]
-Description=Hermes Agent Gateway - ${profile}
+Description=Hermes Gateway — slevensyai
 After=network.target
 
 [Service]
 Type=simple
-User=$USER
-WorkingDirectory=$HOME
-ExecStart=$HOME/.hermes/hermes-agent/venv/bin/hermes gateway --profile ${profile}
+WorkingDirectory=%h
+Environment="HOME=%h"
+ExecStart=%h/.local/bin/slevensyai gateway run --replace
 Restart=always
 RestartSec=10
+CPUQuota=40%
+MemoryMax=768M
 
 [Install]
-WantedBy=multi-user.target
-EOF
-
-sudo systemctl enable hermes-${profile}
-sudo systemctl start hermes-${profile}
-done
-
-# Check status
-sudo systemctl status hermes-pain
+WantedBy=default.target
 ```
 
-### 5. Initialize Kanban Board
+**Wrapper script** (`~/.local/bin/slevensyai`) dibuat otomatis oleh `hermes profile create`.
+
+**Cek status:**
+```bash
+systemctl --user status hermes-slevensyai
+systemctl --user status hermes-pain
+```
+
+**Restart:**
+```bash
+systemctl --user restart hermes-slevensyai
+```
+
+**Catatan:** Kalau command dijalankan dari dalam gateway dan diblokir, gunakan `dbus-send` (lihat Step 7).
+
+---
+
+## Testing
+
+### 1. Cek Gateway Running
 
 ```bash
-# Connect to Pain profile Telegram
-# Send in topic "Pain HQ":
-@Pain_bot /kanban init
+hermes profile list
+systemctl --user is-active hermes-slevensyai
+systemctl --user is-active hermes-pain
+```
 
-# Verify
-@Pain_bot /kanban list
+### 2. Cek Bot Bisa Baca Grup
+
+Untuk tiap bot:
+
+```bash
+TOKEN=$(cat ~/.hermes/profiles/pain/.env | grep TELEGRAM_BOT_TOKEN | cut -d= -f2)
+curl -s "https://api.telegram.org/bot${TOKEN}/getMe" | python3 -m json.tool
+```
+
+Pastikan `can_read_all_group_messages: true`. Kalau `false`, matikan Group Privacy di @BotFather.
+
+### 3. Test Dispatch
+
+Di topic Orchestrator HQ, kirim:
+
+```
+Buatin script Python untuk scrape harga token dari CoinGecko, lalu simpan ke CSV.
+```
+
+**Harapan:** Orchestrator membuat Kanban card, assign ke Sasori atau Itachi. Worker tersebut mulai mengerjakan dan report di topic-nya.
+
+### 4. Cek Kanban Board
+
+```bash
+hermes -p slevensyai kanban list
+hermes -p slevensyai kanban tail
 ```
 
 ---
 
-## Example Tasks
+## Dispatch Rules
 
-### Task 1: Build Full-Stack Airdrop Bot
+Orchestrator memakai skill `akatsuki-dispatch.md` untuk memutuskan assign ke siapa.
 
-**User message in Pain HQ:**
-```
-Build an airdrop bot for Unichain testnet:
-- Multi-wallet support (10 wallets)
-- Actions: swap, add liquidity, bridge
-- Proxy rotation
-- Deploy on VPS with monitoring
-```
+| Task Type | Assign ke |
+|---|---|
+| Planning / architecture / deep dev | Itachi |
+| Quick script / automation / browser | Sasori |
+| Deploy / VPS / CI/CD / infra | Obito |
+| Database / ETL / backend data | Kisame |
+| Design / UI/UX / mockup | Konan |
+| Marketing / growth / content | Deidara |
+| Research / OSINT / intel | Zetsu |
+| Trading / portfolio / wallet | Treasury |
+| Security / bug bounty / red team | Madara |
+| General / unclear | Pain |
 
-**Pain's decomposition:**
-```markdown
-## Task: Unichain Airdrop Bot
-
-### Subtasks
-1. **Research** (Zetsu) — Find Unichain testnet docs, faucet, contracts
-2. **Bot Development** (Sasori) — Build browser automation + wallet rotation
-3. **Backend Service** (Kisame) — Wallet management API, task queue
-4. **Deployment** (Obito) — VPS setup, Docker, monitoring
-5. **Testing** (Itachi) — Security review, dry run
-
-### Dispatch
-- [ ] #1 → Zetsu (Topic 19)
-- [ ] #2 → Sasori (Topic 14) [blocked by #1]
-- [ ] #3 → Kisame (Topic 16)
-- [ ] #4 → Obito (Topic 15) [blocked by #2, #3]
-- [ ] #5 → Itachi (Topic 13) [blocked by #4]
-```
-
-**Kanban board:**
-```
-┌─────────┬──────────┬────────────┬──────┐
-│ Backlog │ Todo     │ In Progress│ Done │
-├─────────┼──────────┼────────────┼──────┤
-│         │ #2 Sasori│ #1 Zetsu   │      │
-│         │ #3 Kisame│            │      │
-│         │ #4 Obito │            │      │
-│         │ #5 Itachi│            │      │
-└─────────┴──────────┴────────────┴──────┘
-```
-
-### Task 2: Launch Marketing Campaign
-
-**User in Pain HQ:**
-```
-Launch Twitter campaign for our new DEX:
-- 10 viral tweets (meme + alpha)
-- Community engagement strategy
-- Landing page design
-```
-
-**Pain dispatch:**
-```markdown
-1. **Content Strategy** (Deidara) — Draft 10 tweets + engagement plan
-2. **Visual Assets** (Konan) — Meme templates, social cards
-3. **Landing Page** (Itachi) — Build Next.js landing page
-4. **Deployment** (Obito) — Deploy landing page
-5. **Automation** (Sasori) — Schedule tweets, auto-reply bot
-```
-
-### Task 3: Bug Bounty on Immunefi
-
-**User in Pain HQ:**
-```
-Hunt bugs on Immunefi for Project X (DeFi protocol):
-- Budget: 3 days
-- Target: Critical/High severity
-```
-
-**Pain dispatch:**
-```markdown
-1. **Recon** (Zetsu) — Gather contracts, docs, competitors
-2. **Initial Scan** (Madara) — Run automated scanners (Slither, Mythril)
-3. **Manual Review** (Itachi) — Deep code audit, business logic
-4. **Exploit Dev** (Madara) — Write PoC for findings
-5. **Report** (Pain) — Compile report, submit to Immunefi
-```
-
----
-
-## Monitoring & Logs
-
-### Kanban Status Dashboard
-
-```bash
-# Check board status
-hermes --profile pain kanban list
-
-# Check worker logs
-tail -f ~/.hermes/profiles/itachi/kanban/*.log
-tail -f ~/.hermes/profiles/sasori/kanban/*.log
-```
-
-### Telegram Monitoring
-
-Pain's **daily standup** (automated cron):
-
-```yaml
-# ~/.hermes/profiles/pain/cron/standup.yaml
-name: daily-standup
-schedule: "0 9 * * *"  # 9 AM daily
-prompt: |
-  Generate daily standup report for Akatsuki team:
-  1. Tasks completed yesterday (check Kanban)
-  2. Tasks in progress
-  3. Blocked tasks
-  4. Today's priorities
-  
-  Format: Telegram message with emojis, casual tone.
-deliver: telegram:${TELEGRAM_GROUP_ID}:12  # Pain HQ topic
-```
-
-### Cost Tracking
-
-```bash
-# Check token usage per profile
-hermes --profile pain stats
-hermes --profile itachi stats
-
-# Monthly cost estimate
-hermes stats --all-profiles --month 2026-06
-```
+**Multi-agent patterns:**
+- **Serial:** Zetsu → Itachi → Obito
+- **Parallel:** Itachi + Konan + Kisame → Obito
+- **Swarm:** Madara + Itachi + Zetsu untuk security audit
 
 ---
 
 ## Troubleshooting
 
-### Issue: Worker Not Picking Up Tasks
+### Semua bot merespon di semua topic
 
-**Diagnosis:**
+**Penyebab:** `allowed_topics` belum di-set atau Group Privacy masih ON.
+
+**Solusi:**
+1. Set `telegram.extra.allowed_topics` di config tiap profile.
+2. Matikan Group Privacy semua bot via @BotFather.
+3. Restart semua gateway.
+
+### Worker tidak mengerjakan tugas
+
+**Cek:**
 ```bash
-# Check gateway status
-sudo systemctl status hermes-itachi
-
-# Check Kanban logs
-tail -50 ~/.hermes/profiles/itachi/kanban/dispatcher.log
+hermes -p slevensyai kanban list
+systemctl --user status hermes-pain
+journalctl --user -u hermes-pain --no-pager -n 30
 ```
 
-**Fix:**
-```bash
-# Restart gateway
-sudo systemctl restart hermes-itachi
+**Penyebab umum:**
+- `orchestrator_profile` di worker beda dengan nama orchestrator.
+- Worker gateway tidak running.
+- `notification_sources` tidak di-set ke `'*'`.
 
-# Or reload config
-hermes --profile itachi config reload
+### Orchestrator tidak mendispatch
+
+**Cek:**
+```bash
+grep dispatch_in_gateway ~/.hermes/profiles/slevensyai/config.yaml
+grep orchestrator_profile ~/.hermes/profiles/slevensyai/config.yaml
 ```
 
-### Issue: Task Stuck in "In Progress"
-
-**Diagnosis:**
-```bash
-# Check task status
-hermes --profile pain kanban show <task_id>
-
-# Check worker session
-hermes --profile itachi sessions list
-```
-
-**Fix:**
-```bash
-# Manually move task
-hermes --profile pain kanban move <task_id> todo
-
-# Or cancel and reassign
-hermes --profile pain kanban cancel <task_id>
-```
-
-### Issue: Pain Not Decomposing
-
-**Check:**
-1. `kanban.orchestrator_profile: pain` set in Pain's config?
-2. `kanban.auto_decompose: true`?
-3. Pain gateway running?
-
-**Fix:**
-```bash
-# Restart Pain gateway
-sudo systemctl restart hermes-pain
-
-# Manual decompose
-hermes --profile pain kanban decompose <task_id>
-```
-
-### Issue: High Token Usage
-
-**Analysis:**
-```bash
-# Find expensive profiles
-hermes stats --all-profiles --sort-by cost
-
-# Check long sessions
-hermes --profile itachi sessions list --sort-by tokens
-```
-
-**Mitigation:**
-1. Lower `max_turns` in expensive profiles
-2. Switch Itachi to `deepseek-v4-flash` for simple tasks
-3. Enable compression earlier:
+Pastikan:
 ```yaml
-compression:
-  threshold: 0.4  # compress sooner
+kanban:
+  orchestrator_profile: slevensyai
+  dispatch_in_gateway: true
 ```
 
----
+### Bot tidak bisa buat topic
 
-## Advanced: BREACH Integration
+**Penyebab:** bot tidak punya permission **Manage topics**.
 
-Jika ingin adopt **BREACH v5** (unrestricted agent) untuk aggressive tasks:
+**Solusi:** di Telegram group → Administrators → pilih bot → enable **Manage Topics**.
 
-### Setup Madara with BREACH Mode
+### Gateway restart diblokir
 
+Gunakan D-Bus:
 ```bash
-# Copy BREACH SOUL.md
-cp ~/BREACH_v5_SOUL.md ~/.hermes/profiles/madara/SOUL.md
-
-# Update config
-cat >> ~/.hermes/profiles/madara/config.yaml <<EOF
-# BREACH mode: unrestricted for red team
-agent:
-  tool_use_enforcement: permissive
-  
-# Governor + confirm gate
-approval:
-  enabled: true
-  auto_approve: false  # manual confirm for destructive actions
-EOF
+dbus-send --session --dest=org.freedesktop.systemd1 \
+  --type=method_call --print-reply \
+  /org/freedesktop/systemd1 \
+  org.freedesktop.systemd1.Manager.RestartUnit \
+  string:"hermes-slevensyai.service" string:"replace"
 ```
 
-**Use cases:**
-- Bug bounty fuzzing
-- API rate limit bypass testing
-- Web scraping at scale
-- Exploit PoC development
+---
 
-**IMPORTANT:** BREACH mode = **testnet/staging only**. Never production.
+## FAQ
+
+### Q: Kenapa Pain bukan orchestrator?
+**A:** Karena bot utamanya adalah @SLEVENSYAIBOT. Kalau Pain jadi orchestrator, @SLEVENSYAIBOT jadi bot personal yang nggak bisa dispatch. Pola KARA: Eida = orchestrator, Code/Daemon = workers. Di sini: @SLEVENSYAIBOT = Eida, Pain/Itachi/Sasori = Code/Daemon.
+
+### Q: Apakah 10 worker harus online 24/7?
+**A:** Tidak wajib. Bisa start on-demand. Tapi kalau mau dispatch langsung jalan, worker yang sering dipakai (Pain, Itachi, Sasori) sebaiknya online.
+
+### Q: Bisa nggak pakai nama profil lain?
+**A:** Bisa. Ganti `profile_name` di `tokens.json`. Pastikan konsisten di semua config.
+
+### Q: Satu bot bisa dipakai untuk beberapa profile?
+**A:** Tidak boleh. Setiap profile harus punya bot token sendiri supaya topic routing tidak bentrok.
+
+### Q: `tokens.json` boleh di-commit ke GitHub?
+**A:** Jangan! File itu sudah masuk `.gitignore`, tapi tetap hati-hati.
 
 ---
 
-## Scaling Beyond 10 Profiles
+## Estimasi Biaya
 
-Kalau tim grow:
+| Profile | Model | Estimasi/bulan |
+|---|---|---|
+| Orchestrator (`slevensyai`) | claude-sonnet-4 | ~$30 |
+| Pain / Sasori / Obito / Treasury | deepseek-v4-flash | ~$10 each |
+| Itachi / Kisame / Zetsu | kimi-k2.7 | ~$30–50 each |
+| Konan | gpt-4o | ~$25 |
+| Deidara | gpt-4o-mini | ~$10 |
+| Madara | claude-opus-4 | ~$35 |
+| **Total** | | **~$200–300/bulan** |
 
-| New Profile | Role | When to Add |
-|-------------|------|-------------|
-| **Nagato** | Project Manager | >5 concurrent projects |
-| **Yahiko** | QA Engineer | Need dedicated testing |
-| **Konohamaru** | Junior Dev (Training) | Onboard new workflows |
-| **Jiraiya** | Documentation Lead | Complex products |
-
----
-
-## Support & Resources
-
-- **Hermes Docs:** https://hermes-agent.nousresearch.com/docs
-- **KARA Team Reference:** `/home/ubuntu/eida-workspace/` (Mas Hexa's setup)
-- **Skill Library:** `~/.hermes/skills/`
-- **Community:** Hermes Discord / Telegram
+**Tips hemat:** pakai `deepseek-v4-flash` untuk semua worker → turun ke **~$60–80/bulan**.
 
 ---
 
-**Built with 💜 by EiDA for the Akatsuki Team**
+## Referensi
 
-*"In the end, we'll achieve true understanding."* — Pain
+- Hermes Docs: https://hermes-agent.nousresearch.com/docs
+- Hermes Kanban: https://hermes-agent.nousresearch.com/docs/kanban
+- KARA Team Reference: setup Eida-Code-Daemon
+- Repo ini: https://github.com/Dinikowoh27/akatsuki-hermes-team
+
+---
+
+*Built with 💜 by EiDA for Akatsuki Team.*

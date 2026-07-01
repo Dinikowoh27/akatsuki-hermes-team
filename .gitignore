@@ -19,6 +19,7 @@ venv/
 *.db-wal
 .env
 .secrets
+tokens.json
 
 # OS
 .DS_Store

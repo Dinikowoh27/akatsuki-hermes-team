@@ -1,0 +1,16 @@
+[Unit]
+Description=Hermes Gateway — Orchestrator (%PROFILE_NAME%)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h
+Environment="HOME=%h"
+ExecStart=%h/.local/bin/%PROFILE_NAME% gateway run --replace
+Restart=always
+RestartSec=10
+CPUQuota=40%
+MemoryMax=768M
+
+[Install]
+WantedBy=default.target

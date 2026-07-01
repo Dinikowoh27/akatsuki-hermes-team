@@ -1,18 +1,29 @@
 ---
 name: akatsuki-dispatch
 description: >
-  Decomposition and dispatch playbook for Pain (Akatsuki orchestrator).
-  Maps task types to the right specialist profile.
-tags: [orchestrator, dispatch, kanban]
+  Decomposition and dispatch playbook untuk Akatsuki Team.
+  Orchestrator = profil bot utama (@SLEVENSYAIBOT). Workers = 10 profil Akatsuki.
+  Worker names: pain, itachi, sasori, obito, kisame, konan, deidara, zetsu, treasury, madara.
+tags: [orchestrator, dispatch, kanban, akatsuki]
 ---
 
 # Akatsuki Dispatch Strategy
+
+> **Orchestrator = profil bot utama (@SLEVENSYAIBOT).**  
+> **Pain, Itachi, Sasori, dll = workers.**  
+> Orchestrator menerima tugas dari user, lalu decompose dan assign ke worker yang tepat.
 
 Pain's decision tree untuk decompose dan assign tasks ke specialist profiles.
 
 ## 🎯 Profile Mapping
 
-### Core Triad (Default)
+### Orchestrator (satu-satunya dispatcher)
+
+| Profile | Bot | Role |
+|---------|-----|------|
+| **`<ORCHESTRATOR_NAME>`** | @SLEVENSYAIBOT | Decomposition, dispatch, final approval, strategy |
+
+### Core Workers (Default)
 
 | Profile | Archetype | Primary Domains | When to Assign |
 |---------|-----------|----------------|---------------|
