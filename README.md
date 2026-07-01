@@ -1,7 +1,7 @@
 # Akatsuki Hermes Team — Setup yang Benar
 
 🌀 Template multi-agent AI team untuk [Hermes Agent](https://hermes-agent.nousresearch.com/docs).  
-**Fokus utama repo ini:** bot **@SLEVENSYAIBOT** jadi orchestrator (kayak Eida), dan 9 profil Akatsuki jadi worker (kayak Code/Daemon).
+**Fokus utama repo ini:** bot **@SLEVENSYAIBOT** jadi orchestrator (kayak Eida), dan 10 profil Akatsuki jadi worker (kayak Code/Daemon).
 
 ---
 
@@ -15,11 +15,11 @@ Banyak yang langsung anggin **Pain = Orchestrator**. Itu salah kalau bot utamany
 | **Deep Hunter** | @Pain02_bot (atau bot Pain) | `pain` | ❌ OFF | Code |
 | **Fast Executor** | @Itachi_bot | `itachi` | ❌ OFF | — |
 | **Automation** | @Sasori_bot | `sasori` | ❌ OFF | Daemon |
-| **Specialists** | masing-masing bot | `obito`, `kisame`, `konan`, `deidara`, `zetsu`, `madara` | ❌ OFF | — |
+| **Specialists** | masing-masing bot | `obito`, `kisame`, `konan`, `deidara`, `zetsu`, `kakuzu`, `madara` | ❌ OFF | — |
 
 **Ingat:**
 - **1 dispatcher** saja, di profil orchestrator.
-- **9 worker** tidak perlu dispatcher.
+- **10 worker** tidak perlu dispatcher.
 - Pain cuma salah satu worker, bukan orchestrator.
 
 ---
@@ -42,7 +42,7 @@ User (DM / Group / Topic) → @SLEVENSYAIBOT
    └─────────┘          └──────────┘          └──────────┘
         │                      │                      │
         ▼                      ▼                      ▼
-   Obito · Kisame · Konan · Deidara · Zetsu · Madara
+   Obito · Kisame · Konan · Deidara · Zetsu · Kakuzu · Madara
 ```
 
 ---
@@ -115,7 +115,7 @@ Lihat [AKATSUKI_TEAM_GUIDE.md](./AKATSUKI_TEAM_GUIDE.md) untuk penjelasan detail
 |---|---|---|
 | Orchestrator (`slevensyai`) | `claude-sonnet-4` | ~$30 |
 | Pain / Itachi / Zetsu | `kimi-k2.7` | ~$40–60 each |
-| Sasori / Obito | `deepseek-v4-flash` | ~$10 each |
+| Sasori / Obito / Kakuzu | `deepseek-v4-flash` | ~$10 each |
 | Konan / Deidara | `gpt-4o` / `gpt-4o-mini` | ~$20–30 |
 | Madara | `claude-opus-4` | ~$35 |
 | **Total** | | **~$200–300/bulan** |

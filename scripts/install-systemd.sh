@@ -8,7 +8,7 @@ set -e
 TOKENS_FILE="${1:-tokens.json}"
 
 ORCH_NAME=$(python3 -c "import json; print(json.load(open('$TOKENS_FILE'))['telegram']['orchestrator'].get('profile_name','slevensyai'))")
-WORKERS=(pain itachi sasori obito kisame konan deidara zetsu madara)
+WORKERS=(pain itachi sasori obito kisame konan deidara zetsu kakuzu madara)
 
 SYSTEMD_DIR="$HOME/.config/systemd/user"
 mkdir -p "$SYSTEMD_DIR"

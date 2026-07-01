@@ -14,7 +14,7 @@ if [[ ! -f "$TOKENS_FILE" ]]; then
 fi
 
 ORCH_NAME=$(python3 -c "import json; print(json.load(open('$TOKENS_FILE'))['telegram']['orchestrator'].get('profile_name','slevensyai'))")
-WORKERS=(pain itachi sasori obito kisame konan deidara zetsu madara)
+WORKERS=(pain itachi sasori obito kisame konan deidara zetsu kakuzu madara)
 
 echo "🌀 Akatsuki Team Setup"
 echo "   Orchestrator: $ORCH_NAME"
